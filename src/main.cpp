@@ -1,27 +1,29 @@
+#include "modules/Scene/Scene.hpp"
+#include "modules/Ball/Ball.hpp"
 #include <raylib-cpp.hpp>
+#include <iostream>
+
 
 int main() {
-    
     // Initialization
-    int screenWidth = 800;
-    int screenHeight = 450;
+    int screenWidth = 1600;
+    int screenHeight = 860;
 
     raylib::Color textColor(LIGHTGRAY);
-    raylib::Window w(screenWidth, screenHeight, "Raylib C++ Starter Kit Example");
+    raylib::Window window(screenWidth, screenHeight, "Myregree Balls");
     
+    Scene scene = Scene();
+
     SetTargetFPS(60);
-
+    
     // Main game loop
-    while (!w.ShouldClose()) // Detect window close button or ESC key
+    while (!window.ShouldClose())
     {
-        // Update
+        scene.Update();
 
-        // TODO: Update your variables here
-
-        // Draw
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        textColor.DrawText("Congrats! You created your first window!", 190, 200, 20);
+            ClearBackground(RAYWHITE);
+            scene.Draw();
         EndDrawing();
     }
 
