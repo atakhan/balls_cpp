@@ -15,6 +15,7 @@ public:
 
     Ball();
     Ball(Vector2);
+    Ball(Vector2, Vector2, float, float, Color);
     ~Ball();
 
     void Init();

@@ -14,4 +14,6 @@ public:
     void Draw();
     void Update();
 
+    void isMousePressed();
+
 };

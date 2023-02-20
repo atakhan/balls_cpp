@@ -10,6 +10,16 @@ Ball::Ball(Vector2 pos) {
     Init(pos);
 }
 
+Ball::Ball(Vector2 pos, Vector2 dir, float speed, float radius, Color color) {
+    this->position.x = pos.x;
+    this->position.y = pos.y;
+    this->direction.x = dir.x;
+    this->direction.y = dir.y;
+    this->speed = speed;
+    this->color = color;
+    this->radius = radius;
+}
+
 Ball::~Ball() {}
 
 void Ball::Init() {
@@ -17,9 +27,9 @@ void Ball::Init() {
     this->position.y = 200;
     this->direction.x = 0.1;
     this->direction.y = 0.1;
-    this->speed = 1;
+    this->speed = 3;
     this->color = RED;
-    this->radius = 20;
+    this->radius = 60;
 }
 
 void Ball::Init(Vector2 pos) {
@@ -27,9 +37,9 @@ void Ball::Init(Vector2 pos) {
     this->position.y = pos.y;
     this->direction.x = 0.1;
     this->direction.y = 0.1;
-    this->speed = 1;
+    this->speed = 3;
     this->color = RED;
-    this->radius = 20;
+    this->radius = 60;
 }
 
 void Ball::Draw() {
