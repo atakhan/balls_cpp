@@ -63,10 +63,10 @@ void Ball::Move() {
 }
 
 void Ball::WallCollider() {
-    if ((position.x >= (GetScreenWidth() - radius)) || (position.x <= radius)){
+    if ((position.x + radius > GetScreenWidth()) || (position.x - radius < 0)){
         direction.x *= -1.0f;
     }
-    if ((position.y >= (GetScreenHeight() - radius)) || (position.y <= radius)){
+    if ((position.y + radius > GetScreenHeight()) || (position.y - radius < 0)){
         direction.y *= -1.0f;
     }
 }

@@ -6,6 +6,7 @@ class Scene {
 public:
     std::list<Ball> balls;
     std::list<Ball>::iterator ball;
+    std::list<Ball>::iterator ball2;
 
     Scene();
     ~Scene();
