@@ -1,6 +1,7 @@
 #include "Ball.hpp"
 #include <raylib-cpp.hpp>
 #include <iostream>
+#include <string>
 
 Ball::Ball() {
     Init();
@@ -10,40 +11,46 @@ Ball::Ball(Vector2 pos) {
     Init(pos);
 }
 
-Ball::Ball(Vector2 pos, Vector2 dir, float speed, float radius, Color color) {
-    this->position.x = pos.x;
-    this->position.y = pos.y;
-    this->direction.x = dir.x;
-    this->direction.y = dir.y;
-    this->speed = speed;
-    this->color = color;
+Ball::Ball(Vector2 pos, Vector2 vel, Vector2 acc, float radius, Color color) {
+    this->pos.x = pos.x;
+    this->pos.y = pos.y;
+    this->vel.x = vel.x;
+    this->vel.y = vel.y;
+    this->acc.x = acc.x;
+    this->acc.y = acc.y;
     this->radius = radius;
+    this->mass = radius * 10.0f;
+    this->color = color;
 }
 
 Ball::~Ball() {}
 
 void Ball::Init() {
-    this->position.x = 200;
-    this->position.y = 200;
-    this->direction.x = 0.1;
-    this->direction.y = 0.1;
-    this->speed = 3;
+    this->pos.x = GetScreenWidth()/2;
+    this->pos.y = GetScreenHeight()/2;
+    this->vel.x = 0.0f;
+    this->vel.y = 0.0f;
+    this->acc.x = 0.0f;
+    this->acc.y = 0.0f;
+    this->radius = 60.0f;
+    this->mass = 600.0f;
     this->color = RED;
-    this->radius = 60;
 }
 
 void Ball::Init(Vector2 pos) {
-    this->position.x = pos.x;
-    this->position.y = pos.y;
-    this->direction.x = 0.1;
-    this->direction.y = 0.1;
-    this->speed = 3;
-    this->color = RED;
-    this->radius = 60;
+    this->Init();
+    this->pos.x = pos.x;
+    this->pos.y = pos.y;
 }
 
 void Ball::Draw() {
-    DrawCircle(position.x, position.y, radius, color);
+    DrawCircle(pos.x, pos.y, radius, color);
+    // std::string px_str = std::to_string(pos.x);
+    // std::string py_str = std::to_string(pos.y);
+    // std::string vx_str = std::to_string(vel.x);
+    // std::string vy_str = std::to_string(vel.y);
+    // raylib::DrawText(px_str + " " + py_str, pos.x, pos.y, 12, BLACK);
+    // raylib::DrawText(vx_str + " " + vy_str, pos.x, pos.y + 18, 12, BLACK);
 }
 
 void Ball::Update() {
@@ -52,36 +59,72 @@ void Ball::Update() {
 }
 
 void Ball::Move() {
-    float vx = direction.x;
-    float vy = direction.y;
-    if (isZero(vx) && isZero(vy)) {
-        this->position.x += vx;
-        this->position.y += vy;
-    } else if (isZero(vx) && !isZero(vy)) {
-        this->position.y += vy * speed;
-    } else if (!isZero(vx) && isZero(vy)) {
-        this->position.x += vx * speed;
-    } else {
-        int sign_x = (vx < 0) ? -1 : 1;
-        int sign_y = (vy < 0) ? -1 : 1;
-        float degAngle = atanf(fabs(vy)/fabs(vx));
-        float velocityX = cos(degAngle) * sign_x * speed;
-        float velocityY = sin(degAngle) * sign_y * speed;
-        position.x += velocityX;
-        position.y += velocityY;
-    }
+    pos.x += vel.x;
+    pos.y += vel.y;
 }
 
 void Ball::WallCollider() {
-    if ((position.x + radius > GetScreenWidth()) || (position.x - radius < 0)){
-        direction.x *= -1.0f;
+    if ((pos.x + radius > GetScreenWidth()) || (pos.x - radius < 0)){
+        vel.x *= -1.0f;
     }
-    if ((position.y + radius > GetScreenHeight()) || (position.y - radius < 0)){
-        direction.y *= -1.0f;
+    if ((pos.y + radius > GetScreenHeight()) || (pos.y - radius < 0)){
+        vel.y *= -1.0f;
     }
 }
 
-bool Ball::isZero(float x) {
-  if (fabs(x) < FLT_MIN) return true;
-  return false;
+bool Ball::DoBallsOverlap(Ball ball) {
+    return fabs(
+        (pos.x - ball.pos.x) * (pos.x - ball.pos.x) + 
+        (pos.y - ball.pos.y) * (pos.y - ball.pos.y) 
+    ) <= (
+        (radius + ball.radius) * (radius + ball.radius)
+    );
 }
+
+bool Ball::IsPointInBall(Vector2 mousePos) {
+    return fabs(
+        (pos.x - mousePos.x) * (pos.x - mousePos.x) + 
+        (pos.y - mousePos.y) * (pos.y - mousePos.y) 
+    ) < (
+        (radius * radius)
+    );
+}
+
+
+void Ball::DynamicCollider(Ball ball, std::vector<std::pair<Ball*, Ball*>> &vecCollidingPairs) {
+    if ((pos.x != ball.pos.x) && (pos.y != ball.pos.y)) {
+        if (this->DoBallsOverlap(ball)) {
+            // Collision has occured
+            vecCollidingPairs.push_back({&*this, &ball});
+            // Distance between ball centers
+            float fDistance = sqrtf(
+                (pos.x - ball.pos.x) * 
+                (pos.x - ball.pos.x) + 
+                (pos.y - ball.pos.y) * 
+                (pos.y - ball.pos.y)
+            );
+            float fOverlap = 0.5f * (fDistance - radius - ball.radius);
+            // Displace current ball
+            pos.x -= fOverlap * (pos.x - ball.pos.x) / fDistance;
+            pos.y -= fOverlap * (pos.y - ball.pos.y) / fDistance;
+            // Displace target ball
+            ball.pos.x += fOverlap * (pos.x - ball.pos.x) / fDistance;
+            ball.pos.y += fOverlap * (pos.y - ball.pos.y) / fDistance;
+        }
+    }
+}
+
+
+// bool Ball::isZero(float x) {
+//   if (fabs(x) < FLT_MIN) return true;
+//   return false;
+// }
+
+// float Ball::GetDistanceFrom(const Ball other) {
+//     float x = this->position.x - other.position.x;
+//     float y = this->position.y - other.position.y;
+//     float distance = sqrtf(x * x + y * y);
+//     if (distance == 0) 
+//         distance = 0.000001;
+//     return distance;
+// }

@@ -7,15 +7,19 @@
 class Ball {
 public:
     
-    Vector2 position;
-    Vector2 direction;
-    float speed;
+    // Vector2 position;
+    // Vector2 acceleration;
+    // Vector2 velocity;
+    Vector2 pos;
+    Vector2 vel;
+    Vector2 acc;
     float radius;
+    float mass;
     Color color;
 
     Ball();
     Ball(Vector2);
-    Ball(Vector2, Vector2, float, float, Color);
+    Ball(Vector2, Vector2, Vector2, float, Color);
     ~Ball();
 
     void Init();
@@ -25,7 +29,11 @@ public:
     void Update();
     void Move();
     void WallCollider();
+    bool DoBallsOverlap(Ball);
+    bool IsPointInBall(Vector2);
+    void DynamicCollider(Ball, std::vector<std::pair<Ball*, Ball*>>&);
     bool isZero(float);
+    float GetDistanceFrom(const Ball);
 };
 
 #endif  // BALL_H_
