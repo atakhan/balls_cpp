@@ -11,17 +11,17 @@ Scene::Scene() {
 
 Scene::~Scene() {}
 
-void Scene::isRightMouseBtnPressed() {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+void Scene::AddBallToScene() {
+    if (IsKeyPressed(KEY_A)) {
         Vector2 mousePos = GetMousePosition();
         std::cout << mousePos.x << " " << mousePos.y << std::endl;
         balls.push_back(Ball(mousePos));
     }
 }
 
-void Scene::isLeftMouseBtnPressed() {
+void Scene::MoveBallByMouse() {
     Vector2 mousePos = GetMousePosition();
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         pSelectedBall = nullptr;
         for(ball = balls.begin(); ball != balls.end(); ball++) {
             if (ball->IsPointInBall(mousePos)) {
@@ -39,26 +39,47 @@ void Scene::isLeftMouseBtnPressed() {
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         pSelectedBall = nullptr;
     }
+
+    // give an impulse to ball
+    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+        if (pSelectedBall != nullptr) {
+            pSelectedBall->vel.x = 0.1f * ((pSelectedBall->pos.x) - (float) mousePos.x);
+            pSelectedBall->vel.y = 0.1f * ((pSelectedBall->pos.y) - (float) mousePos.y);
+        }
+        pSelectedBall = nullptr;
+    }
 }
 
 void Scene::Update() {
-    this->isRightMouseBtnPressed();
-    this->isLeftMouseBtnPressed();
+    this->AddBallToScene();
+    this->MoveBallByMouse();
+    for(ball = balls.begin(); ball != balls.end(); ball++) {
+        ball->Update();
+    }
     for(ball = balls.begin(); ball != balls.end(); ball++) {
         for(ball2 = balls.begin(); ball2 != balls.end(); ball2++) {
-            ball->DynamicCollider(*ball2, vecCollidingPairs);
+            // ball->StaticCollider(*ball2, collideLines);
+            ball->DynamicCollider(*ball2);
         }
-        ball->Update();
     }
     
 }
 
 void Scene::Draw() {
+    // Draw balls
     for(ball = balls.begin(); ball != balls.end(); ball++) {
         ball->Draw();
     }
-    for (auto c : vecCollidingPairs)
-        DrawLine(c.first->pos.x, c.first->pos.y, c.second->pos.x, c.second->pos.y, BLACK);
     
+    // Draw collide lines
+    for (auto c : collideLines) {
+        DrawLine(c.startx, c.starty, c.endx, c.endy, BLACK);
+    }
+    collideLines.clear();
+
+    // Draw Cue
+    if (pSelectedBall != nullptr) {
+        DrawLine(pSelectedBall->pos.x, pSelectedBall->pos.y, GetMousePosition().x, GetMousePosition().y, BLUE);
+    }
 
 }

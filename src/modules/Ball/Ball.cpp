@@ -1,7 +1,5 @@
 #include "Ball.hpp"
 #include <raylib-cpp.hpp>
-#include <iostream>
-#include <string>
 
 Ball::Ball() {
     Init();
@@ -32,9 +30,10 @@ void Ball::Init() {
     this->vel.y = 0.0f;
     this->acc.x = 0.0f;
     this->acc.y = 0.0f;
-    this->radius = 60.0f;
-    this->mass = 600.0f;
-    this->color = RED;
+    int randomRadius = 2 + (std::rand() % 10);
+    this->radius = randomRadius;
+    this->mass = randomRadius * 10;
+    this->color = DARKGREEN;
 }
 
 void Ball::Init(Vector2 pos) {
@@ -45,22 +44,41 @@ void Ball::Init(Vector2 pos) {
 
 void Ball::Draw() {
     DrawCircle(pos.x, pos.y, radius, color);
-    // std::string px_str = std::to_string(pos.x);
-    // std::string py_str = std::to_string(pos.y);
-    // std::string vx_str = std::to_string(vel.x);
-    // std::string vy_str = std::to_string(vel.y);
-    // raylib::DrawText(px_str + " " + py_str, pos.x, pos.y, 12, BLACK);
-    // raylib::DrawText(vx_str + " " + vy_str, pos.x, pos.y + 18, 12, BLACK);
 }
 
 void Ball::Update() {
     this->Move();
-    this->WallCollider();
+    // this->WallCollider();
 }
 
 void Ball::Move() {
+    acc.x = -vel.x * 0.01f;
+    acc.y = -vel.y * 0.01f;
+
+    vel.x += acc.x;
+    vel.y += acc.y;
+
     pos.x += vel.x;
     pos.y += vel.y;
+
+    if (fabs(vel.x * vel.x + vel.y * vel.y) < 0.01f) {
+        vel.x = 0;
+        vel.y = 0;
+    }
+
+    if ((pos.x + radius > GetScreenWidth()) || (pos.x - radius < 0)){
+        vel.x *= -1.0f;
+    }
+    if ((pos.y + radius > GetScreenHeight()) || (pos.y - radius < 0)){
+        vel.y *= -1.0f;
+    }
+
+    // Clamp velocity near zero
+    if (fabs(vel.x * vel.x + vel.y * vel.y) < 0.01f)
+    {
+        vel.x = 0;
+        vel.y = 0;
+    }
 }
 
 void Ball::WallCollider() {
@@ -90,12 +108,13 @@ bool Ball::IsPointInBall(Vector2 mousePos) {
     );
 }
 
-
-void Ball::DynamicCollider(Ball ball, std::vector<std::pair<Ball*, Ball*>> &vecCollidingPairs) {
+void Ball::StaticCollider(Ball ball, std::list<collideLine> &collideLines) {
     if ((pos.x != ball.pos.x) && (pos.y != ball.pos.y)) {
         if (this->DoBallsOverlap(ball)) {
-            // Collision has occured
-            vecCollidingPairs.push_back({&*this, &ball});
+            
+            // Collision has occured, add collide line to draw
+            collideLines.push_back((collideLine){pos.x, pos.y, ball.pos.x, ball.pos.y});
+            
             // Distance between ball centers
             float fDistance = sqrtf(
                 (pos.x - ball.pos.x) * 
@@ -104,9 +123,63 @@ void Ball::DynamicCollider(Ball ball, std::vector<std::pair<Ball*, Ball*>> &vecC
                 (pos.y - ball.pos.y)
             );
             float fOverlap = 0.5f * (fDistance - radius - ball.radius);
+            
+            // TODO! 
             // Displace current ball
             pos.x -= fOverlap * (pos.x - ball.pos.x) / fDistance;
             pos.y -= fOverlap * (pos.y - ball.pos.y) / fDistance;
+            
+            // Displace target ball
+            ball.pos.x += fOverlap * (pos.x - ball.pos.x) / fDistance;
+            ball.pos.y += fOverlap * (pos.y - ball.pos.y) / fDistance;
+        }
+    }
+}
+
+void Ball::DynamicCollider(Ball ball) {
+    if ((pos.x != ball.pos.x) && (pos.y != ball.pos.y)) {
+        if (this->DoBallsOverlap(ball)) {
+            
+            // Distance between ball centers
+            float fDistance = sqrtf(
+                (pos.x - ball.pos.x) * 
+                (pos.x - ball.pos.x) + 
+                (pos.y - ball.pos.y) * 
+                (pos.y - ball.pos.y)
+            );
+            
+            // Normal
+            float nx = (ball.pos.x - pos.x) / fDistance;
+            float ny = (ball.pos.y - pos.y) / fDistance;
+
+            // Tangent
+            float tx = -ny;
+            float ty = nx;
+
+            // Dot Product Tangent
+            float dpTan1 = vel.x * tx + vel.y * ty;
+            float dpTan2 = ball.vel.x * tx + ball.vel.y * ty;
+
+            // Dot Product Normal
+            float dpNorm1 = vel.x * nx + vel.y * ny;
+            float dpNorm2 = ball.vel.x * nx + ball.vel.y * ny;
+
+            // Conservation of momentum in 1D
+            float m1 = (dpNorm1 * (mass - ball.mass) + 2.0f * ball.mass * dpNorm2) / (mass + ball.mass);
+            float m2 = (dpNorm2 * (ball.mass - mass) + 2.0f * mass * dpNorm1) / (mass + ball.mass);
+
+            // update ball velocities
+            vel.x = tx * dpTan1 + nx * m1;
+            vel.y = ty * dpTan1 + ny * m1;
+            ball.vel.x = tx * dpTan2 + nx * m2;
+            ball.vel.y = ty * dpTan2 + ny * m2;
+
+            float fOverlap = 0.5f * (fDistance - radius - ball.radius);
+            
+            // Displace current ball
+            pos.x -= fOverlap * (pos.x - ball.pos.x) / fDistance;
+            pos.y -= fOverlap * (pos.y - ball.pos.y) / fDistance;
+            
             // Displace target ball
             ball.pos.x += fOverlap * (pos.x - ball.pos.x) / fDistance;
             ball.pos.y += fOverlap * (pos.y - ball.pos.y) / fDistance;

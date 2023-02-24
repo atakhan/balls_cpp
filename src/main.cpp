@@ -3,7 +3,6 @@
 #include <raylib-cpp.hpp>
 #include <iostream>
 
-
 int main() {
     // Initialization
     int screenWidth = 1600;
@@ -11,7 +10,7 @@ int main() {
 
     raylib::Color textColor(LIGHTGRAY);
     raylib::Window window(screenWidth, screenHeight, "Myregree Balls");
-    
+
     Scene scene = Scene();
 
     SetTargetFPS(60);
@@ -20,7 +19,6 @@ int main() {
     while (!window.ShouldClose())
     {
         scene.Update();
-
         BeginDrawing();
             ClearBackground(RAYWHITE);
             scene.Draw();

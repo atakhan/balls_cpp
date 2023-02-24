@@ -7,7 +7,7 @@ public:
     std::list<Ball> balls;
     std::list<Ball>::iterator ball;
     std::list<Ball>::iterator ball2;
-    std::vector<std::pair<Ball*, Ball*>> vecCollidingPairs;
+    std::list<collideLine> collideLines;
 
     Scene();
     ~Scene();
@@ -15,8 +15,8 @@ public:
     void Draw();
     void Update();
 
-    void isRightMouseBtnPressed();
-    void isLeftMouseBtnPressed();
+    void AddBallToScene();
+    void MoveBallByMouse();
 private:
     Ball *pSelectedBall = nullptr;
 };
