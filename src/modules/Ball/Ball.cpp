@@ -108,12 +108,12 @@ bool Ball::IsPointInBall(Vector2 mousePos) {
     );
 }
 
-void Ball::StaticCollider(Ball ball, std::list<collideLine> &collideLines) {
+void Ball::StaticCollider(Ball ball, std::list<ball::collideLine> &collideLines) {
     if ((pos.x != ball.pos.x) && (pos.y != ball.pos.y)) {
         if (this->DoBallsOverlap(ball)) {
             
             // Collision has occured, add collide line to draw
-            collideLines.push_back((collideLine){pos.x, pos.y, ball.pos.x, ball.pos.y});
+            collideLines.push_back((ball::collideLine){pos.x, pos.y, ball.pos.x, ball.pos.y});
             
             // Distance between ball centers
             float fDistance = sqrtf(

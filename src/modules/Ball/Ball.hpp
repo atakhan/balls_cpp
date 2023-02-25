@@ -31,7 +31,7 @@ public:
     void WallCollider();
     bool DoBallsOverlap(Ball);
     bool IsPointInBall(Vector2);
-    void StaticCollider(Ball, std::list<collideLine>&);
+    void StaticCollider(Ball, std::list<ball::collideLine>&);
     void DynamicCollider(Ball);
     bool isZero(float);
     float GetDistanceFrom(const Ball);

@@ -7,7 +7,7 @@ public:
     std::list<Ball> balls;
     std::list<Ball>::iterator ball;
     std::list<Ball>::iterator ball2;
-    std::list<collideLine> collideLines;
+    std::list<ball::collideLine> collideLines;
 
     Scene();
     ~Scene();
