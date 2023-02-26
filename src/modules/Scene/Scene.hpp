@@ -1,20 +1,19 @@
 #include "../Ball/Ball.hpp"
+#include "../Vector2D/Vector2D.hpp"
+
 #include <raylib-cpp.hpp>
 #include <list>
+#include <string>
 
 class Scene {
 public:
-    std::list<Ball> balls;
-    std::list<Ball>::iterator ball;
-    std::list<Ball>::iterator ball2;
-    std::list<ball::collideLine> collideLines;
+    std::vector<Ball> balls;
 
     Scene();
     ~Scene();
 
     void Draw();
     void Update();
-
     void AddBallToScene();
     void MoveBallByMouse();
 private:

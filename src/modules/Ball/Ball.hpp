@@ -1,25 +1,38 @@
 #ifndef BALL_H_
 #define BALL_H_
 
-#include "../../structs.hpp"
+#include "../Vector2D/Vector2D.hpp"
+
 #include <raylib-cpp.hpp>
 #include <float.h>
 #include <list>
 #include <iostream>
 #include <string>
 
+#define BALLS_COUNT 100
+#define MIN_RADIUS 10
+#define MAX_RADIUS 60
+
+#define MIN_MASS 1
+#define MAX_MASS 5000
+
+#define RESTITUTION 0.85f
+#define EPSILON 0.000009f
+
+
 class Ball {
 public:
-    Vector2 pos;
-    Vector2 vel;
-    Vector2 acc;
+    Vector2D pos;
+    Vector2D vel;
+    Vector2D acc;
     float radius;
     float mass;
     Color color;
+    const double newton_G = 6.67384e-1;
 
     Ball();
     Ball(Vector2);
-    Ball(Vector2, Vector2, Vector2, float, Color);
+    Ball(Vector2D, Vector2D, Vector2D, float, Color);
     ~Ball();
 
     void Init();
@@ -31,10 +44,7 @@ public:
     void WallCollider();
     bool DoBallsOverlap(Ball);
     bool IsPointInBall(Vector2);
-    void StaticCollider(Ball, std::list<ball::collideLine>&);
-    void DynamicCollider(Ball);
-    bool isZero(float);
-    float GetDistanceFrom(const Ball);
+    void ResolveCollision(Ball);
 };
 
 #endif  // BALL_H_
