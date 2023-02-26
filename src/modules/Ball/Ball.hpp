@@ -10,13 +10,13 @@
 #include <string>
 
 #define BALLS_COUNT 100
-#define MIN_RADIUS 10
-#define MAX_RADIUS 60
+#define MIN_RADIUS 6
+#define MAX_RADIUS 12
 
 #define MIN_MASS 1
 #define MAX_MASS 5000
 
-#define RESTITUTION 0.85f
+#define RESTITUTION 0.9f
 #define EPSILON 0.000009f
 
 
@@ -28,7 +28,7 @@ public:
     float radius;
     float mass;
     Color color;
-    const double newton_G = 6.67384e-1;
+    const double newton_G = 0.1;
 
     Ball();
     Ball(Vector2);

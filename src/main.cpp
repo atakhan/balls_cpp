@@ -7,8 +7,8 @@
 
 int main() {
     // Initialization
-    int screenWidth = 1600;
-    int screenHeight = 1200;
+    int screenWidth = 1200;
+    int screenHeight = 800;
 
     raylib::Color textColor(LIGHTGRAY);
     raylib::Window window(screenWidth, screenHeight, "Myregree Balls");

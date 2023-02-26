@@ -59,17 +59,25 @@ void Scene::Update() {
     }
     for (size_t i = 0; i < balls.size(); ++i) {
         balls[i].WallCollider();
-        for (size_t j = 0; j < balls.size(); ++j) {
+        for (size_t j = i + 1; j < balls.size(); ++j) {
             if (balls[i].pos.x != balls[j].pos.x || balls[i].pos.y != balls[j].pos.y) {
                 if (balls[i].DoBallsOverlap(balls[j])) {
                     balls[i].ResolveCollision(balls[j]);
                     balls[i].WallCollider();
                 }
-
             }
-        // for (size_t j = i + 1; j < balls.size(); ++j) {
         }
-    }    
+    }
+    for (size_t i = 0; i < balls.size(); ++i) {
+        for (size_t j = i + 1; j < balls.size(); ++j) {
+            if (balls[i].pos.x != balls[j].pos.x || balls[i].pos.y != balls[j].pos.y) {
+                if (balls[i].DoBallsOverlap(balls[j])) {
+                    balls[i].ResolveCollision(balls[j]);
+                    balls[i].WallCollider();
+                }
+            }
+        }
+    }
 }
 
 void Scene::Draw() {
