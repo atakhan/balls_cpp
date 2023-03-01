@@ -11,6 +11,17 @@ Scene::Scene() {
 
 Scene::~Scene() {}
 
+Scene::Scene(Scene&& other) noexcept { this->Swap(other); }
+
+void Scene::Swap(Scene& right) {
+  std::swap(balls, right.balls);
+}
+
+Scene& Scene::operator=(Scene &&other) {
+  this->~Scene();
+  return *new(this) Scene(std::move(other));
+}
+
 void Scene::AddBallToScene() {
     if (balls.size() < BALLS_COUNT ) {
         Vector2 mousePos = GetMousePosition();
@@ -53,6 +64,10 @@ void Scene::MoveBallByMouse() {
 void Scene::Update() {
     this->AddBallToScene();
     this->MoveBallByMouse();
+ 
+    std::sort(balls.begin(), balls.end(), [](const Ball& lhs, const Ball& rhs) {
+        return lhs.pos.x < rhs.pos.x;
+    });
 
     for (size_t i = 0; i < balls.size(); ++i) {
         balls[i].Move();

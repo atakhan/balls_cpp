@@ -63,7 +63,7 @@ void Ball::Move() {
     vel.x += acc.x;
     vel.y += acc.y;
 
-    // vel.y = vel.y + newton_G;
+    vel.y = vel.y + newton_G;
     pos.x += vel.x;
     pos.y += vel.y;
 

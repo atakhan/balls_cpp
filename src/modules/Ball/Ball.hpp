@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 
-#define BALLS_COUNT 100
+#define BALLS_COUNT 1000
 #define MIN_RADIUS 6
 #define MAX_RADIUS 12
 
