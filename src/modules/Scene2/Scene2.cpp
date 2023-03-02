@@ -1,28 +1,28 @@
-#include "Scene.hpp"
+#include "Scene2.hpp"
 #include <raylib-cpp.hpp>
 #include <iostream>
 
-Scene::Scene() {
+Scene2::Scene2() {
     Ball ball = Ball((Vector2){
         (float)GetScreenWidth()/2, 
         (float)GetScreenHeight()/2});
     balls.push_back(ball);
 }
 
-Scene::~Scene() {}
+Scene2::~Scene2() {}
 
-Scene::Scene(Scene&& other) noexcept { this->Swap(other); }
+Scene2::Scene2(Scene2&& other) noexcept { this->Swap(other); }
 
-void Scene::Swap(Scene& right) {
+void Scene2::Swap(Scene2& right) {
   std::swap(balls, right.balls);
 }
 
-Scene& Scene::operator=(Scene &&other) {
-  this->~Scene();
-  return *new(this) Scene(std::move(other));
+Scene2& Scene2::operator=(Scene2 &&other) {
+  this->~Scene2();
+  return *new(this) Scene2(std::move(other));
 }
 
-void Scene::AddBallToScene() {
+void Scene2::AddBallToScene2() {
     if (balls.size() < BALLS_COUNT ) {
         Vector2 mousePos = GetMousePosition();
         std::cout << mousePos.x << " " << mousePos.y << std::endl;
@@ -30,7 +30,7 @@ void Scene::AddBallToScene() {
     }
 }
 
-void Scene::MoveBallByMouse() {
+void Scene2::MoveBallByMouse() {
     Vector2 mousePos = GetMousePosition();
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         pSelectedBall = nullptr;
@@ -61,8 +61,8 @@ void Scene::MoveBallByMouse() {
     }
 }
 
-void Scene::Update() {
-    this->AddBallToScene();
+void Scene2::Update() {
+    this->AddBallToScene2();
     this->MoveBallByMouse();
  
     std::sort(balls.begin(), balls.end(), [](const Ball& lhs, const Ball& rhs) {
@@ -95,7 +95,7 @@ void Scene::Update() {
     }
 }
 
-void Scene::Draw() {
+void Scene2::Draw() {
     DrawFPS(10,10);
     std::string ballsCount = std::to_string(balls.size());
     raylib::DrawText(ballsCount, 100, 10, 20, RED);
