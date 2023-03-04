@@ -102,7 +102,7 @@ inline Vec2 Cross(const Vec2& v, const real& s) {
 }
 
 // Function to limit the minimum and maximum value of the variable
-inline real Clamp(const real& min, const real& max, const real& v) {
+inline real clamp(const real& min, const real& max, const real& v) {
     if (v < min) return min;
     if (v > max) return max;
     return v;

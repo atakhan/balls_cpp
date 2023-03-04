@@ -34,7 +34,7 @@ struct ManifoldKey {
 };
 
 struct Manifold {
-  enum {MAX_POINTS = 2};
+  enum {MAX_POINTS = 3};
   int numContacts;
 
   Contact contacts[MAX_POINTS];

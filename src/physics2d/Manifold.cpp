@@ -80,7 +80,7 @@ void Manifold::ApplyImpulse(void) {
         real dPt = -vt * c->massTangent; // Ax + b = 0 --> x = -b * A⁻¹; 
         real MaxPt = u * c->Pn; // MaxPt = uλn
         real Pt0 = c->Pt;
-        c->Pt = Clamp(-MaxPt, MaxPt, Pt0 + dPt); // |λt| <= uλn  "OR"  -uλn <= λt <= uλn
+        c->Pt = clamp(-MaxPt, MaxPt, Pt0 + dPt); // |λt| <= uλn  "OR"  -uλn <= λt <= uλn
         dPt = c->Pt - Pt0;
         Vec2 P = tangent * dPt; // Jt * λ
         A->velocity -= P * A->invm;

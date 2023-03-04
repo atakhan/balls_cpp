@@ -1,81 +1,147 @@
+#include "physics2d/Collision.h"
+#include "physics2d/Manifold.h"
+#include "physics2d/PhysicsMath.h"
+#include "physics2d/RigidBody.h"
 #include "physics2d/Scene.h"
+#include "physics2d/Shape.h"
 
 #include <raylib-cpp.hpp>
 #include <iostream>
 
-Vec2 gravity(0.0f, -10.0f);
-Scene scene(gravity, 10, 4);
+#define BALLS_COUNT 400
+#define GRAVITY 10.0f
 
+Shape *pSelectedBall = nullptr;
 
-static void AngryBirds(void)
+void DrawCircleShape(const Shape* shape)
 {
-  RigidBody* b1 = new RigidBody(OBB(22.0f, 0.8f), Vec2(0, -7.5), 0.0f); 
-  b1->Static();
-  
-  OBB w2(2.0f, 0.6f);
-  OBB w3(4.3f, 0.4f);
+  const RigidBody* body = shape->body;
+  DrawCircle(
+    body->position.x,
+    body->position.y,
+    shape->radius,
+    body->color
+  );
+}
 
-  RigidBody* b2 = new RigidBody(w2, Vec2(-3.0f, -6.43f), 20 * RAD); 
-  b2->Static();
-  
-  RigidBody* b4 = new RigidBody(w2, Vec2( 3.0f, -6.43f), -20 * RAD); 
-  b4->Static();
-  
-  RigidBody* b3 = new RigidBody(w3, Vec2(0, -6.0f), 0.0f); 
-  b3->Static();
-  
-  scene.Add(b1);
-  scene.Add(b2);
-  scene.Add(b3);
-  scene.Add(b4);
-  
-  int row = 4, col = 3;
-  
-  for(int i = 0; i < col; i++) // Columns
-  {
-    for(int j = 0; j < row; j++) // Rows
-    {
-      OBB wo(0.2f, 1.2f);
+void DrawObbShape(const Shape* shape)
+{
+  DrawRectangle(
+    shape->body->position.x,
+    shape->body->position.y,
+    shape->width.x,
+    shape->width.y,
+    BLUE
+  );
+}
 
-      real x = 1.5f * i;
-      real y = 1.4f * j - 5.2f;
+void DrawShape(const Shape* shape)
+{
+	switch (shape->type) {
+		case circle: DrawCircleShape(shape); break;
+		case obb: DrawObbShape(shape); break;
+	}
+}
 
-      RigidBody* b5 = new RigidBody(wo, Vec2(x - 2.1f, y), 0.0f); 
-      b5->Dynamic(1.0f);
-      scene.Add(b5);
-      
-      RigidBody* b6 = new RigidBody(wo, Vec2(x - 1.1f, y), 0.0f); 
-      b6->Dynamic(1.0);
-      scene.Add(b6);
-      
-      RigidBody* b7 = new RigidBody(wo, Vec2(x - 1.6f, y + 0.7f), PI * 0.5f); // 90 degrees 
-      b7->Dynamic(1.0f);		
-      scene.Add(b7);
+void WallCollider(Shape* obj) {
+    if ((obj->body->position.x + obj->radius >= GetScreenWidth())) {
+        obj->body->velocity.x *= -1.0f;
+        obj->body->position.x = GetScreenWidth() - obj->radius;
+    } else if (obj->body->position.x - obj->radius < 0) {
+        obj->body->velocity.x *= -1.0f;
+        obj->body->position.x = obj->radius;
     }
-  }
+    if (obj->body->position.y + obj->radius >= GetScreenHeight()) {
+        obj->body->velocity.y *= -1.0f;
+        obj->body->position.y = GetScreenHeight() - obj->radius;
+    } else if (obj->body->position.y - obj->radius < 0) {
+        obj->body->velocity.y *= -1.0f;
+        obj->body->position.y = obj->radius;
+    }
+}
+
+void AddBallToScene(Scene *scene, Circle &c) {
+    if (scene->bodies.size() < BALLS_COUNT ) {
+        Vector2 mousePos = GetMousePosition();
+        RigidBody* b = new RigidBody(c, Vec2(mousePos.x, mousePos.y), 0.0f);
+        b->Dynamic(10.0f);
+        b->color = raylib::Color(GetRandomValue(0, 240), GetRandomValue(0, 240), GetRandomValue(0, 250), 255);
+        scene->Add(b);
+    }
+}
+
+bool IsPointInBall(Vector2 mousePos, RigidBody* body) {
+    return fabs(
+        (body->position.x - mousePos.x) * (body->position.x - mousePos.x) + 
+        (body->position.y - mousePos.y) * (body->position.y - mousePos.y) 
+    ) < (
+        (body->shape->radius * body->shape->radius)
+    );
+}
+
+void MoveBallByMouse(Scene *scene) {
+    Vector2 mousePos = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        pSelectedBall = nullptr;
+        for(RigidBody* temp : scene->bodies) {
+          WallCollider(temp->shape);
+          if (IsPointInBall(mousePos, temp->shape->body)) {
+              pSelectedBall = temp->shape;
+              break;
+          }
+        }
+    }
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (pSelectedBall != nullptr) {
+            pSelectedBall->body->position.x = mousePos.x;
+            pSelectedBall->body->position.y = mousePos.y;
+        }
+    }
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        pSelectedBall = nullptr;
+    }
+
+    // give an impulse to ball
+    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+        if (pSelectedBall != nullptr) {
+            pSelectedBall->body->velocity.x = 3 * ((pSelectedBall->body->velocity.x) - (float) mousePos.x);
+            pSelectedBall->body->velocity.y = 3 * ((pSelectedBall->body->velocity.y) - (float) mousePos.y);
+        }
+        pSelectedBall = nullptr;
+    }
 }
 
 int main() {
-    // Initialization
-    int screenWidth = 1200;
-    int screenHeight = 800;
+  // Initialization
+  int screenWidth = 1200;
+  int screenHeight = 800;
 
-    raylib::Color textColor(LIGHTGRAY);
-    raylib::Window window(screenWidth, screenHeight, "Myregree Balls");
-    
-    SetTargetFPS(60);
-    
-    Start();
+  raylib::Color textColor(LIGHTGRAY);
+  raylib::Window window(screenWidth, screenHeight, "Physic Balls");
+  
+  SetTargetFPS(60);
 
-    // Main game loop
-    while (!window.ShouldClose())
-    {
-        
-        BeginDrawing();
-            ClearBackground(RAYWHITE);
+  Vec2 gravity(0.0f, GRAVITY);
+  Scene scene(gravity, 2, 2);
+  scene.CorrectionType = NGS;
+  real timeStep = 1.0f / 60.0f;
+  
+  Circle w3(20);  
 
-        EndDrawing();
-    }
+  // Main game loop
+  while (!window.ShouldClose())
+  {
+      AddBallToScene(&scene, w3);
+      MoveBallByMouse(&scene);
+      for(RigidBody* temp : scene.bodies) WallCollider(temp->shape);
+      scene.Step(timeStep);
 
-    return 0;
+      BeginDrawing();
+        DrawFPS(10,10);
+        ClearBackground(RAYWHITE);
+        for(RigidBody* temp : scene.bodies) DrawShape(temp->shape);
+      EndDrawing();
+  }
+
+  return 0;
 }

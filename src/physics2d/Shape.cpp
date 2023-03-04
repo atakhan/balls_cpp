@@ -1,7 +1,8 @@
 #include "Shape.h"					
 
 Circle::Circle(const real& _radius) {
-  type = circle; radius = _radius;
+  type = circle; 
+  radius = _radius;
 }
 
 Shape* Circle::newShape(void) {

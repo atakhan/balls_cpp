@@ -1,9 +1,9 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "Manifold.h"
 #include <map>
 #include <vector>
-#include "Manifold.h"
 
 enum {
     NONE = 0, 

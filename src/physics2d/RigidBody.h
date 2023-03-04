@@ -2,6 +2,7 @@
 #define RIGIDBODY_H
 
 #include "PhysicsMath.h"
+#include <raylib-cpp.hpp>
 
 struct Shape;
 
@@ -21,6 +22,7 @@ struct RigidBody {
     real linearDamping;  // амортизация гашение
     real angularDamping;
     real gravityScale;
+    Color color;
 
     Shape* shape;
 

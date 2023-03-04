@@ -1,4 +1,5 @@
 #include "Collision.h"
+#include <iostream>
 
 void CircleToCircle(Manifold& m, Shape* c1, Shape* c2) {
     Vec2 distance = c2->body->position - c1->body->position;
@@ -68,8 +69,6 @@ inline static int FindIncidentEdgeIndex(const real& projection1, const real& pro
     
     return 1 - i;
 }
-
-
 
 inline static Vec2 ClipSegment(Vec2& A, Vec2& B, Vec2& C, const Vec2& n) {
     Vec2 BA = B - A;
