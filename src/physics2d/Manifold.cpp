@@ -31,8 +31,6 @@ void Manifold::Update(Contact* newContacts, const int& numNewContacts) {
         contacts[i] = mergedContacts[i];
 }
 
-
-
 void Manifold::WarmStarting(void) {
     Vec2 tangent = Cross(normal, -1.0f);
     for(int i = 0; i < numContacts; i++) {

@@ -68,8 +68,6 @@ void Scene::Step(const real& dt) {
     // (SI/PGS) Sequential-Impulse/Projected-Gauss-Seidel 
     for(int i = 0; i < iterVel; i++) {
         for(ManifoldAux temp = manifolds.begin(); temp != manifolds.end(); temp++) {
-            // v = v + P * M⁻¹  
-            // ω = ω + L * I⁻¹
             temp->second.ApplyImpulse(); 
         }
     }

@@ -1,118 +1,50 @@
-#include "physics2d/Collision.h"
-#include "physics2d/Manifold.h"
-#include "physics2d/PhysicsMath.h"
-#include "physics2d/RigidBody.h"
-#include "physics2d/Scene.h"
-#include "physics2d/Shape.h"
-
 #include <raylib-cpp.hpp>
+
+#include "modules/Player/Player.h"
+#include "modules/Bullet/Bullet.h"
+#include "modules/Enemy/Enemy.h"
+
 #include <iostream>
+#include <vector>
+#include <iterator>
 
-#define BALLS_COUNT 400
-#define GRAVITY 10.0f
+#define SPAWN_TIME 60
+#define MAX_ENEMY_AMOUNT 10
 
-Shape *pSelectedBall = nullptr;
-
-void DrawCircleShape(const Shape* shape)
-{
-  const RigidBody* body = shape->body;
-  DrawCircle(
-    body->position.x,
-    body->position.y,
-    shape->radius,
-    body->color
+bool BulletEnemyCollider(Bullet &bullet, Enemy &enemy) {
+  return fabs(
+    (bullet.pos.x - enemy.pos.x) * (bullet.pos.x - enemy.pos.x) + 
+    (bullet.pos.y - enemy.pos.y) * (bullet.pos.y - enemy.pos.y) 
+  ) <= (
+    (bullet.radius + enemy.radius) * (bullet.radius + enemy.radius)
   );
 }
 
-void DrawObbShape(const Shape* shape)
-{
-  DrawRectangle(
-    shape->body->position.x,
-    shape->body->position.y,
-    shape->width.x,
-    shape->width.y,
-    BLUE
+bool PlayerEnemyCollider(Player &player, Enemy &enemy) {
+  return fabs(
+    (player.pos.x - enemy.pos.x) * (player.pos.x - enemy.pos.x) + 
+    (player.pos.y - enemy.pos.y) * (player.pos.y - enemy.pos.y) 
+  ) <= (
+    (player.radius + enemy.radius) * (player.radius + enemy.radius)
   );
 }
 
-void DrawShape(const Shape* shape)
-{
-	switch (shape->type) {
-		case circle: DrawCircleShape(shape); break;
-		case obb: DrawObbShape(shape); break;
-	}
+void DrawBulletsCount(Player player) {
+  std::string bc = std::to_string(player.bullets.size());
+  raylib::DrawText(bc, 100, 10, 16, DARKGREEN);
 }
 
-void WallCollider(Shape* obj) {
-    if ((obj->body->position.x + obj->radius >= GetScreenWidth())) {
-        obj->body->velocity.x *= -1.0f;
-        obj->body->position.x = GetScreenWidth() - obj->radius;
-    } else if (obj->body->position.x - obj->radius < 0) {
-        obj->body->velocity.x *= -1.0f;
-        obj->body->position.x = obj->radius;
-    }
-    if (obj->body->position.y + obj->radius >= GetScreenHeight()) {
-        obj->body->velocity.y *= -1.0f;
-        obj->body->position.y = GetScreenHeight() - obj->radius;
-    } else if (obj->body->position.y - obj->radius < 0) {
-        obj->body->velocity.y *= -1.0f;
-        obj->body->position.y = obj->radius;
-    }
+void DrawTicks(int tick) {
+  std::string bc = std::to_string(tick);
+  raylib::DrawText(bc, 200, 10, 16, BLACK);
 }
 
-void AddBallToScene(Scene *scene, Circle &c) {
-    if (scene->bodies.size() < BALLS_COUNT ) {
-        Vector2 mousePos = GetMousePosition();
-        RigidBody* b = new RigidBody(c, Vec2(mousePos.x, mousePos.y), 0.0f);
-        b->Dynamic(10.0f);
-        b->color = raylib::Color(GetRandomValue(0, 240), GetRandomValue(0, 240), GetRandomValue(0, 250), 255);
-        scene->Add(b);
-    }
-}
-
-bool IsPointInBall(Vector2 mousePos, RigidBody* body) {
-    return fabs(
-        (body->position.x - mousePos.x) * (body->position.x - mousePos.x) + 
-        (body->position.y - mousePos.y) * (body->position.y - mousePos.y) 
-    ) < (
-        (body->shape->radius * body->shape->radius)
-    );
-}
-
-void MoveBallByMouse(Scene *scene) {
-    Vector2 mousePos = GetMousePosition();
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        pSelectedBall = nullptr;
-        for(RigidBody* temp : scene->bodies) {
-          WallCollider(temp->shape);
-          if (IsPointInBall(mousePos, temp->shape->body)) {
-              pSelectedBall = temp->shape;
-              break;
-          }
-        }
-    }
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        if (pSelectedBall != nullptr) {
-            pSelectedBall->body->position.x = mousePos.x;
-            pSelectedBall->body->position.y = mousePos.y;
-        }
-    }
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        pSelectedBall = nullptr;
-    }
-
-    // give an impulse to ball
-    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
-        if (pSelectedBall != nullptr) {
-            pSelectedBall->body->velocity.x = 3 * ((pSelectedBall->body->velocity.x) - (float) mousePos.x);
-            pSelectedBall->body->velocity.y = 3 * ((pSelectedBall->body->velocity.y) - (float) mousePos.y);
-        }
-        pSelectedBall = nullptr;
-    }
+void DrawEnemiesCount(int count) {
+  std::string bc = std::to_string(count);
+  raylib::DrawText(bc, 300, 10, 16, DARKGREEN);
 }
 
 int main() {
-  // Initialization
   int screenWidth = 1200;
   int screenHeight = 800;
 
@@ -121,26 +53,76 @@ int main() {
   
   SetTargetFPS(60);
 
-  Vec2 gravity(0.0f, GRAVITY);
-  Scene scene(gravity, 2, 2);
-  scene.CorrectionType = NGS;
-  real timeStep = 1.0f / 60.0f;
-  
-  Circle w3(20);  
+  Player player = Player();
+  std::vector<Enemy> enemies;
 
-  // Main game loop
-  while (!window.ShouldClose())
-  {
-      AddBallToScene(&scene, w3);
-      MoveBallByMouse(&scene);
-      for(RigidBody* temp : scene.bodies) WallCollider(temp->shape);
-      scene.Step(timeStep);
+  int ticks = 1;
+
+  bool game = true;
+
+  while (!window.ShouldClose()) {
+      if (game) {
+        player.update();
+
+        if (ticks == SPAWN_TIME && enemies.size() <= MAX_ENEMY_AMOUNT) {
+          enemies.push_back(Enemy());
+          ticks = 0;
+        }
+        
+        for(auto enemy = enemies.begin(); enemy!=enemies.end(); enemy++) {
+          enemy->update(player.pos);
+          if (PlayerEnemyCollider(player, *enemy)) {
+            game = false;
+          }
+        }
+
+        for(auto bullet = player.bullets.begin(); bullet!=player.bullets.end();) {
+          bullet->update();
+          
+          bool isBulletCollideWithEnemy = false;
+          for(auto enemy = enemies.begin(); enemy!=enemies.end();) {
+            if (BulletEnemyCollider(*bullet, *enemy)) {
+              enemy = enemies.erase(enemy);
+              isBulletCollideWithEnemy = true;
+            } else {
+              enemy++;
+            }
+          }
+          
+          if (bullet->WallCollider() || isBulletCollideWithEnemy)
+            bullet = player.bullets.erase(bullet);
+          
+          else
+            bullet++;
+        }
+      }
 
       BeginDrawing();
-        DrawFPS(10,10);
         ClearBackground(RAYWHITE);
-        for(RigidBody* temp : scene.bodies) DrawShape(temp->shape);
+        if (game) {
+          DrawFPS(10,10);
+          DrawBulletsCount(player);
+          DrawTicks(ticks);
+          DrawEnemiesCount(enemies.size());
+          
+          // Draw player
+          player.draw();
+          
+          // Draw enemy
+          for(auto enemy = enemies.begin(); enemy!=enemies.end(); enemy++)
+            enemy->draw();
+
+          // Draw bullets
+          for(auto bullet = player.bullets.begin(); bullet != player.bullets.end(); bullet++) 
+            bullet->draw();
+        } else {
+          raylib::Text gameover = raylib::Text("GAME OVER"); 
+          int width = gameover.Measure();
+          raylib::DrawText("GAME OVER", GetScreenWidth() / 2 - width, GetScreenHeight() / 2 - 64, 32, DARKGRAY);
+        }
+
       EndDrawing();
+      ticks++;
   }
 
   return 0;
