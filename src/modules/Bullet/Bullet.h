@@ -19,6 +19,11 @@ public:
   void update();
   void draw();
 
+  static void DrawAll(std::vector<Bullet> &bullets) {
+    for(auto bullet = bullets.begin(); bullet != bullets.end(); bullet++) 
+      bullet->draw();
+  }
+
 };
 
 #endif  // BULLET_H

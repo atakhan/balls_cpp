@@ -2,6 +2,8 @@
 #include "../Bullet/Bullet.h"
 #include <iostream>
 
+#define SPEED_UPGRADE 1
+
 Enemy::Enemy() {
   int wall = randomWall();
   radius = 30;
@@ -9,6 +11,7 @@ Enemy::Enemy() {
   vel.x = 0;
   vel.y = 0;
   speed = 1;
+
   switch (wall) {
     case 1:  // top wall
       pos.x = randomPos(GetScreenWidth());
@@ -64,4 +67,19 @@ void Enemy::draw() {
     radius,
     color
   );
+}
+
+void Enemy::spawn(std::vector<Enemy> &enemies, int *tick, int killed, int *spawnTime) {
+  // if (*tick == SPAWN_TIME && enemies.size() < MAX_ENEMY_AMOUNT) {
+  if (*tick == *spawnTime) {
+    Enemy enemy = Enemy();
+    (killed == 0)
+      ? enemy.speed = 1
+      : enemy.speed = 1 + (killed / 4);
+    enemies.push_back(enemy);
+    if (*spawnTime > 30) {
+      *spawnTime -= 1;
+    }
+    *tick = 0;
+  }
 }

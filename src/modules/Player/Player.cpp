@@ -7,9 +7,21 @@ Player::Player() : bullets() {
   pos.x = GetScreenWidth() / 2;
   pos.y = GetScreenHeight() / 2;
   color = PINK;
-  rifle.x = 1;
-  rifle.y = 1;
+  rifleStart.x = 1;
+  rifleStart.y = 1;
+  rifleEnd.x = 1;
+  rifleEnd.y = 1;
   speed = 3;
+  eyeSize = 2;
+  // Texture
+  texture = LoadTexture("assets/character.png");
+  frameWidth = (float)(texture.width/8);   // Sprite one frame rectangle width
+  frameHeight = (float)(texture.height/12);           // Sprite one frame rectangle height
+  currentFrame = 0;
+  currentLine = 2;
+  frameRec = { 0, 0, frameWidth, frameHeight };
+  active = false;
+  framesCounter = 0;
 }
 
 void Player::move() {
@@ -36,45 +48,90 @@ void Player::move() {
 }
 
 void Player::rifleUpdate() {
-  rifle = GetMousePosition();
-  float dx = rifle.x - pos.x;
-  float dy = rifle.y - pos.y;
+  rifleStart = GetMousePosition();
+  float dx = rifleStart.x - pos.x;
+  float dy = rifleStart.y - pos.y;
   
   float angle = atan2f(dy, dx);
   
   float dxx = radius * cosf(angle);
   float dyy = radius * sinf(angle);
 
-  rifle.x = pos.x + dxx;
-  rifle.y = pos.y + dyy;
+  float dxx2 = (radius + 5) * cosf(angle);
+  float dyy2 = (radius + 5) * sinf(angle);
+
+  rifleStart.x = pos.x + dxx;
+  rifleStart.y = pos.y + dyy;
+  
+  rifleEnd.x = pos.x + dxx2;
+  rifleEnd.y = pos.y + dyy2;
 }
 
 void Player::shoot() {
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-    float vx = (rifle.x - pos.x);
-    float vy = (rifle.y - pos.y);
+    float vx = (rifleStart.x - pos.x);
+    float vy = (rifleStart.y - pos.y);
     bullets.push_back(
       Bullet(pos, (Vector2){vx, vy})
     );
   }
 }
 
-void Player::update() {
+void Player::reloadPosition() {
+  pos.x = GetScreenWidth() / 2;
+  pos.y = GetScreenHeight() / 2;
+}
+
+void Player::Update(int killed) {
+  eyeSize = 1 + (killed /6);
   move();
   rifleUpdate();
   shoot();
+  if (active) {
+    framesCounter++;
+    if (framesCounter > 2){
+      currentFrame++;
+      if (currentFrame >= 8) {
+        currentFrame = 0;
+        currentLine++;
+
+        if (currentLine >= 12) {
+          currentLine = 0;
+          active = false;
+        }
+      }
+
+      framesCounter = 0;
+    }
+  }
+
+  frameRec.x = frameWidth*currentFrame;
+  frameRec.y = frameHeight*currentLine;
 }
 
-void Player::draw() {
+void Player::DrawBody() {
   DrawCircle(
     pos.x,
     pos.y,
     radius,
     color
   );
-  DrawLineEx(
-    (Vector2){pos.x,pos.y}, 
-    rifle, 
-    2, BLACK
-  );
+}
+
+void Player::DrawEyes() {
+  DrawCircle(pos.x - 6, pos.y, eyeSize, WHITE);
+  DrawCircle(pos.x + 6, pos.y, eyeSize, WHITE);
+  DrawCircle(pos.x - 6, pos.y, 2, BLACK);
+  DrawCircle(pos.x + 6, pos.y, 2, BLACK);
+}
+
+void Player::DrawGun() {
+  DrawLineEx(rifleStart, rifleEnd, 2, BLACK);
+}
+
+void Player::Draw() {
+  DrawBody();
+  DrawEyes();
+  DrawGun();
+  DrawTextureRec(texture, frameRec, pos, WHITE);
 }

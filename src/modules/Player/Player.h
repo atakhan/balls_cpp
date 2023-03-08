@@ -9,10 +9,20 @@ class Player
 public:
   int radius;
   Vector2 pos;
-  Vector2 rifle;
+  Vector2 rifleStart;
+  Vector2 rifleEnd;
   Color color;
   std::vector<Bullet> bullets;
   int speed;
+  int eyeSize;
+  Texture2D texture;
+  float frameWidth;
+  float frameHeight;
+  int currentFrame;
+  int currentLine;
+  Rectangle frameRec;
+  bool active;
+  int framesCounter;
 
   Player();
 
@@ -20,9 +30,13 @@ public:
   
   void rifleUpdate();
   void shoot();
-  
-  void update();
-  void draw();
+  void reloadPosition();  
+  void Update(int killed);
+
+  void DrawBody();
+  void DrawEyes();
+  void DrawGun();
+  void Draw();
 
 };
 
