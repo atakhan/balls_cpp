@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "../Bullet/Bullet.h"
+#include "../SpriteAnimation/SpriteAnimation.h"
 #include <raylib-cpp.hpp>
 
 class Player
@@ -15,18 +16,23 @@ public:
   std::vector<Bullet> bullets;
   int speed;
   int eyeSize;
-  Texture2D texture;
-  float frameWidth;
-  float frameHeight;
-  int currentFrame;
-  int currentLine;
-  Rectangle frameRec;
-  bool active;
-  int framesCounter;
+
+  SpriteAnimation moveTopAnimation;
+  SpriteAnimation moveBottomAnimation;
+  SpriteAnimation moveLeftAnimation;
+  SpriteAnimation moveLeftTopAnimation;
+  SpriteAnimation moveLeftBottomAnimation;
+  SpriteAnimation moveRightAnimation;
+  SpriteAnimation moveRightTopAnimation;
+  SpriteAnimation moveRightBottomAnimation;
+  SpriteAnimation idleAnimation;
+
+  int activeAnimation;
 
   Player();
 
   void move();
+  void UpdateAnimation();
   
   void rifleUpdate();
   void shoot();

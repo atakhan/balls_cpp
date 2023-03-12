@@ -3,7 +3,7 @@
 
 Bullet::Bullet(Vector2 _pos, Vector2 _vel) {
   radius = 5;
-  color = RED;
+  color = YELLOW;
   pos = _pos;
   vel = _vel;
 }

@@ -4,13 +4,16 @@
 
 #define SPEED_UPGRADE 1
 
-Enemy::Enemy() {
+Enemy::Enemy() : animation("assets/zombies_v2.png", 17, 1, 17) {
   int wall = randomWall();
   radius = 30;
   color = BLUE;
   vel.x = 0;
   vel.y = 0;
   speed = 1;
+  angle = 0.0f;
+  animation.SetCurrentLine(0);
+  animation.SetCurrentFrame(0);
 
   switch (wall) {
     case 1:  // top wall
@@ -47,7 +50,7 @@ void Enemy::move(Vector2 plPos) {
   float dx = plPos.x - pos.x;
   float dy = plPos.y - pos.y;
   
-  float angle = atan2f(dy, dx);
+  angle = atan2f(dy, dx);
   
   float dxx = speed * cosf(angle);
   float dyy = speed * sinf(angle);
@@ -58,15 +61,19 @@ void Enemy::move(Vector2 plPos) {
 
 void Enemy::update(Vector2 plPos) {
   move(plPos);
+  animation.PlayAnimation(1, 17);
+  animation.UpdateFrameRec();
 }
 
 void Enemy::draw() {
-  DrawCircle(
-    pos.x,
-    pos.y,
-    radius,
-    color
-  );
+  // DrawCircle(
+  //   pos.x,
+  //   pos.y,
+  //   radius,
+  //   color
+  // );
+  Vector2 spritePos = {pos.x, pos.y};
+  animation.DrawFramePro(spritePos, angle);
 }
 
 void Enemy::spawn(std::vector<Enemy> &enemies, int *tick, int killed, int *spawnTime) {

@@ -17,6 +17,7 @@ struct Game {
   int killed;
   int spawnTime;
   bool isOver;
+  Texture2D game_bg;
 
   Game() : enemies() {
     player = Player();
@@ -24,6 +25,7 @@ struct Game {
     killed = 0;
     isOver = false;
     spawnTime = 60;
+    game_bg = LoadTexture("assets/background.png");
   }
 
   void Restart() {
@@ -37,14 +39,6 @@ struct Game {
 
   void DrawStats() {
     DrawFPS(10,10);
-
-    // bullets count
-    std::string bc = std::to_string(player.bullets.size());
-    raylib::DrawText(bc, 100, 10, 16, DARKGREEN);
-    
-    // draw ticks
-    std::string tc = std::to_string(tick);
-    raylib::DrawText(tc, 200, 10, 16, BLACK);
     
     // enemies count
     std::string ec = std::to_string(enemies.size());
@@ -56,33 +50,35 @@ struct Game {
   }
 
   void DrawGameOver() {
-    raylib::Text gameover = raylib::Text("GAME OVER"); 
+    raylib::Text gameover = raylib::Text("GAME OVER", 64); 
     int width = gameover.Measure();
     raylib::DrawText(
       "GAME OVER", 
-      GetScreenWidth() / 2 - width, 
+      GetScreenWidth() / 2 - (width / 2), 
       GetScreenHeight() / 2 - 64, 
-      32, DARKGRAY
+      64, RED
     );
 
     // FINAL SCORE
-    raylib::Text final_score_text = std::string("KILLED: " + std::to_string(killed));
+    raylib::Text final_score_text = raylib::Text("KILLED: " + std::to_string(killed), 32);
     width = final_score_text.Measure();
     raylib::DrawText(
       "KILLED: " + std::to_string(killed), 
-      GetScreenWidth() / 2 - width, 
+      GetScreenWidth() / 2 - (width / 2), 
       GetScreenHeight() / 2, 
-      32, DARKGRAY
+      32, WHITE
     );
   }
 
   void Draw() {
     if (!isOver) {
+      DrawTexture(game_bg, 0,0, WHITE);
       DrawStats();
       player.Draw();
       Enemy::DrawAll(enemies);
       Bullet::DrawAll(player.bullets);
     } else {
+      ClearBackground(BLACK);
       DrawGameOver();
     }
   }
@@ -93,7 +89,7 @@ struct Game {
       enemy.spawn(enemies, &tick, killed, &spawnTime);
       Collider<Player>::Update(player, enemies, &isOver, &killed);
     } else {
-      if (IsKeyPressed(KEY_ENTER)) {
+      if (IsKeyPressed(KEY_SPACE)) {
         Restart();
       }
     }
@@ -102,8 +98,8 @@ struct Game {
 };
 
 int main() {
-  int screenWidth = 1200;
-  int screenHeight = 800;
+  int screenWidth = 1024;
+  int screenHeight = 1024;
 
   raylib::Color textColor(LIGHTGRAY);
   raylib::Window window(screenWidth, screenHeight, "Zombie Balls");

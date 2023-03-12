@@ -1,6 +1,7 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 #include "../Bullet/Bullet.h"
+#include "../SpriteAnimation/SpriteAnimation.h"
 #include <raylib-cpp.hpp>
 
 #define SPAWN_TIME 60
@@ -14,6 +15,8 @@ public:
   Vector2 vel;
   Color color;
   float speed = 1;
+  float angle;
+  SpriteAnimation animation;
 
   Enemy();
 

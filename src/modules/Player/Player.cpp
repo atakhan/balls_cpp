@@ -2,26 +2,91 @@
 #include "../Bullet/Bullet.h"
 #include <iostream>
 
-Player::Player() : bullets() {
+Player::Player() : 
+    bullets(),
+    moveTopAnimation("assets/character.png", 12, 8, 8),
+    moveBottomAnimation("assets/character.png", 12, 8, 8),
+    moveLeftAnimation("assets/character.png", 12, 8, 8),
+    moveLeftTopAnimation("assets/character.png", 12, 8, 8),
+    moveLeftBottomAnimation("assets/character.png", 12, 8, 8),
+    moveRightAnimation("assets/character.png", 12, 8, 8),
+    moveRightTopAnimation("assets/character.png", 12, 8, 8),
+    moveRightBottomAnimation("assets/character.png", 12, 8, 8),
+    idleAnimation("assets/character.png", 12, 8, 8)
+{
   radius = 20;
-  pos.x = GetScreenWidth() / 2;
-  pos.y = GetScreenHeight() / 2;
+  pos = {(float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2};
   color = PINK;
-  rifleStart.x = 1;
-  rifleStart.y = 1;
-  rifleEnd.x = 1;
-  rifleEnd.y = 1;
+  rifleStart = {1, 1};
+  rifleEnd = {1, 1};
   speed = 3;
   eyeSize = 2;
-  // Texture
-  texture = LoadTexture("assets/character.png");
-  frameWidth = (float)(texture.width/8);   // Sprite one frame rectangle width
-  frameHeight = (float)(texture.height/12);           // Sprite one frame rectangle height
-  currentFrame = 0;
-  currentLine = 2;
-  frameRec = { 0, 0, frameWidth, frameHeight };
-  active = false;
-  framesCounter = 0;
+  // Top
+  moveTopAnimation.SetCurrentLine(5);
+  moveTopAnimation.SetCurrentFrame(0);
+  // Right Top
+  moveRightTopAnimation.SetCurrentLine(5);
+  moveRightTopAnimation.SetCurrentFrame(1);
+  // Right
+  moveRightAnimation.SetCurrentLine(5);
+  moveRightAnimation.SetCurrentFrame(2);
+  // Right Bottom
+  moveRightBottomAnimation.SetCurrentLine(5);
+  moveRightBottomAnimation.SetCurrentFrame(3);
+  // Bottom
+  moveBottomAnimation.SetCurrentLine(5);
+  moveBottomAnimation.SetCurrentFrame(4);
+  // Left Bottom
+  moveLeftBottomAnimation.SetCurrentLine(5);
+  moveLeftBottomAnimation.SetCurrentFrame(5);
+  // Left
+  moveLeftAnimation.SetCurrentLine(5);
+  moveLeftAnimation.SetCurrentFrame(6);
+  // Left Top
+  moveLeftTopAnimation.SetCurrentLine(5);
+  moveLeftTopAnimation.SetCurrentFrame(7);
+  // Idle
+  idleAnimation.SetCurrentLine(6);
+  idleAnimation.SetCurrentFrame(4);
+
+  activeAnimation = 0;
+
+}
+
+void Player::UpdateAnimation() {
+  activeAnimation = 0;
+  if (IsKeyDown(KEY_W) && !IsKeyDown(KEY_A) && !IsKeyDown(KEY_D)) {
+    moveTopAnimation.PlayAnimation(5, 7);
+    activeAnimation = 1;
+  }
+  if (IsKeyDown(KEY_D) && IsKeyDown(KEY_W)) {
+    moveRightTopAnimation.PlayAnimation(5, 7);
+    activeAnimation = 2;
+  }
+  if (IsKeyDown(KEY_D) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S)) {
+    moveRightAnimation.PlayAnimation(5, 7);
+    activeAnimation = 3;
+  }
+  if (IsKeyDown(KEY_D) && IsKeyDown(KEY_S)) {
+    moveRightBottomAnimation.PlayAnimation(5, 7);
+    activeAnimation = 4;
+  }
+  if (IsKeyDown(KEY_S) && !IsKeyDown(KEY_A) && !IsKeyDown(KEY_D)) {
+    moveBottomAnimation.PlayAnimation(5, 7);
+    activeAnimation = 5;
+  }
+  if (IsKeyDown(KEY_A) && IsKeyDown(KEY_S)) {
+    moveLeftBottomAnimation.PlayAnimation(5, 7);
+    activeAnimation = 6;
+  }
+  if (IsKeyDown(KEY_A) && !IsKeyDown(KEY_W) && !IsKeyDown(KEY_S)) {
+    moveLeftAnimation.PlayAnimation(5, 7);
+    activeAnimation = 7;
+  }
+  if (IsKeyDown(KEY_A) && IsKeyDown(KEY_W)) {
+    moveLeftTopAnimation.PlayAnimation(5, 7);
+    activeAnimation = 8;
+  }
 }
 
 void Player::move() {
@@ -85,28 +150,18 @@ void Player::reloadPosition() {
 void Player::Update(int killed) {
   eyeSize = 1 + (killed /6);
   move();
+  UpdateAnimation();
   rifleUpdate();
   shoot();
-  if (active) {
-    framesCounter++;
-    if (framesCounter > 2){
-      currentFrame++;
-      if (currentFrame >= 8) {
-        currentFrame = 0;
-        currentLine++;
-
-        if (currentLine >= 12) {
-          currentLine = 0;
-          active = false;
-        }
-      }
-
-      framesCounter = 0;
-    }
-  }
-
-  frameRec.x = frameWidth*currentFrame;
-  frameRec.y = frameHeight*currentLine;
+  if (activeAnimation == 1) moveTopAnimation.UpdateFrameRec();
+  if (activeAnimation == 2) moveRightTopAnimation.UpdateFrameRec();
+  if (activeAnimation == 3) moveRightAnimation.UpdateFrameRec();
+  if (activeAnimation == 4) moveRightBottomAnimation.UpdateFrameRec();
+  if (activeAnimation == 5) moveBottomAnimation.UpdateFrameRec();
+  if (activeAnimation == 6) moveLeftBottomAnimation.UpdateFrameRec();
+  if (activeAnimation == 7) moveLeftAnimation.UpdateFrameRec();
+  if (activeAnimation == 8) moveLeftTopAnimation.UpdateFrameRec();
+  if (activeAnimation == 0) idleAnimation.UpdateFrameRec();
 }
 
 void Player::DrawBody() {
@@ -130,8 +185,17 @@ void Player::DrawGun() {
 }
 
 void Player::Draw() {
-  DrawBody();
-  DrawEyes();
-  DrawGun();
-  DrawTextureRec(texture, frameRec, pos, WHITE);
+  // DrawBody();
+  // DrawEyes();
+  // DrawGun();
+  Vector2 spritePos = {pos.x - radius + 4, pos.y - radius};
+  if (activeAnimation == 1) moveTopAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 2) moveRightTopAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 3) moveRightAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 4) moveRightBottomAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 5) moveBottomAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 6) moveLeftBottomAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 7) moveLeftAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 8) moveLeftTopAnimation.DrawFrame(spritePos);
+  if (activeAnimation == 0) idleAnimation.DrawFrame(spritePos);
 }
